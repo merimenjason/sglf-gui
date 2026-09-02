@@ -12,6 +12,14 @@ teammates can use it from a browser.
 otherwise. See `singlife_travel_claim.py`'s own docstring for the full
 safety notes — nothing about that has changed here.
 
+**Look and feel:** styled to match [jason.engineering](https://jason.engineering)
+(dark navy background, lime-green Fermion accent, the Fermion "F" mark as
+logo/favicon) — colors were read directly from that site's own CSS
+(`#0A2733` background, `#0F3543` cards, `#C3D700` lime accent, `#00567A`
+header band) and cross-checked against the official Fermion Merimen brand
+palette. The logo is a redrawn approximation of the Fermion mark (a lime
+circle with a white 3-bar "F"), not a copy of the original image file.
+
 ## Deploying it (one-time setup, ~10 minutes)
 
 You'll need a free [GitHub](https://github.com) account and a free
@@ -31,6 +39,8 @@ there with your GitHub account — no separate signup).
    - `.streamlit/config.toml` (keep the `.streamlit` folder — GitHub's
      "Add file → Upload files" page preserves folder structure if you drag
      the whole folder in; otherwise create the file manually at that path)
+   - `assets/fermion_mark.png` (the logo/favicon — keep the `assets`
+     folder, same note as above)
 
    Easiest way if you're not familiar with git: on your new repo's GitHub
    page, click **Add file → Upload files**, then drag in this whole

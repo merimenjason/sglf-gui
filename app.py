@@ -11,6 +11,7 @@ This app refuses to start if BASE_URL there isn't the UAT host.
 
 from __future__ import annotations
 
+import base64
 import subprocess
 import sys
 import tempfile
@@ -22,33 +23,59 @@ import streamlit as st
 
 import singlife_travel_claim as automation
 
+ASSETS_DIR = Path(__file__).parent / "assets"
+
 st.set_page_config(
     page_title="Singlife Travel Claim — UAT Tester",
-    page_icon="\U0001f6eb",
+    page_icon=str(ASSETS_DIR / "fermion_mark.png"),
     layout="centered",
 )
 
 # --------------------------------------------------------------------------
-# Light styling pass — clean/minimal, teal accent, card-style sections.
+# Styling pass — matches the dark navy / lime-green Fermion brand palette
+# used on jason.engineering (colors confirmed from that site's own computed
+# styles: page bg #0A2733, card bg #0F3543, card border #1E4E60, accent
+# lime #C3D700, header band #00567A, text #EAF6FA / muted #8FB6C4 — these
+# also match the official Fermion Merimen deck theme's accent2/accent5).
 # --------------------------------------------------------------------------
+_logo_b64 = base64.b64encode((ASSETS_DIR / "fermion_mark.png").read_bytes()).decode()
+
 st.markdown(
     """
     <style>
-    .block-container { padding-top: 2.5rem; padding-bottom: 3rem; max-width: 760px; }
-    h1 { font-weight: 700; letter-spacing: -0.01em; }
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    html, body, [class*="css"] { font-family: 'Inter', system-ui, sans-serif; }
+    .block-container { padding-top: 2rem; padding-bottom: 3rem; max-width: 760px; }
+
+    .brand-header {
+        display: flex; align-items: center; gap: 14px;
+        background: #00567A; border: 1px solid #1E4E60; border-radius: 12px;
+        padding: 16px 20px; margin-bottom: 1.25rem;
+    }
+    .brand-header img { width: 40px; height: 40px; flex-shrink: 0; }
+    .brand-header .brand-title {
+        color: #FFFFFF; font-size: 1.35rem; font-weight: 700; letter-spacing: -0.01em;
+        line-height: 1.25;
+    }
+    .brand-header .brand-subtitle { color: #BFE6EF; font-size: 0.85rem; margin-top: 2px; }
+
     .uat-banner {
-        background: #FFF4E5; border: 1px solid #F2C078; color: #7A4A00;
-        border-radius: 10px; padding: 0.65rem 1rem; font-size: 0.9rem;
+        background: #2E2410; border: 1px solid #6B5416; color: #F0D98C;
+        border-radius: 10px; padding: 0.65rem 1rem; font-size: 0.88rem;
         margin-bottom: 1.5rem;
     }
+
     div[data-testid="stButton"] button[kind="primary"] {
-        background-color: #006E96; border-color: #006E96;
-        font-weight: 600; padding: 0.55rem 1.4rem;
+        background-color: #C3D700; border-color: #C3D700; color: #0A2733;
+        font-weight: 700; padding: 0.55rem 1.4rem;
     }
     div[data-testid="stButton"] button[kind="primary"]:hover {
-        background-color: #00587a; border-color: #00587a;
+        background-color: #d4e820; border-color: #d4e820; color: #0A2733;
     }
+
+    div[data-testid="stVerticalBlockBorderWrapper"] { border-radius: 12px; }
     div[data-testid="stExpander"] { border-radius: 10px; }
+    code { color: #BFE6EF; }
     </style>
     """,
     unsafe_allow_html=True,
@@ -93,10 +120,17 @@ run_lock = _get_run_lock()
 # --------------------------------------------------------------------------
 # Header
 # --------------------------------------------------------------------------
-st.title("Singlife Travel Claim — UAT Tester")
-st.caption(
-    "Runs a UAT test claim on the Merimen Client Portal for Singlife General "
-    "Insurance. No coding required — pick a scenario below and press Run."
+st.markdown(
+    f"""
+    <div class="brand-header">
+        <img src="data:image/png;base64,{_logo_b64}" alt="Fermion" />
+        <div>
+            <div class="brand-title">Singlife Travel Claim — UAT Tester</div>
+            <div class="brand-subtitle">Merimen Client Portal · Singlife General Insurance</div>
+        </div>
+    </div>
+    """,
+    unsafe_allow_html=True,
 )
 st.markdown(
     '<div class="uat-banner">⚠️ <strong>UAT / test data only.</strong> '
