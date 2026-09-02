@@ -78,8 +78,13 @@ That's it — no server to manage, no ongoing cost on the free tier.
 2. Pick a scenario: Medical Expense, Flight Delay, or Baggage Loss/Damage.
 3. (Optional) Open **Advanced options** to override the claim amount(s),
    add a policy-number suffix, or fill-and-stop instead of submitting.
-4. Click **Run test claim** and watch the live log. It typically takes
-   1–3 minutes.
+4. Click **Run test claim** and watch it go. It typically takes 1–3
+   minutes. There's no real browser window to watch on a remote server,
+   but with **"Show live screenshots while it runs"** ticked (on by
+   default) you'll see a screenshot after each wizard step completes —
+   a "flipbook" view of the run — above the live log. Untick it if you'd
+   rather just read the log; it saves a few seconds per run since no
+   screenshots are taken.
 5. When it finishes, you'll see either a green "submitted successfully"
    confirmation with the policy number used, or — if something on the
    portal didn't behave as expected — a screenshot of exactly where it

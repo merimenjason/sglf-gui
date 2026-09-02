@@ -224,6 +224,15 @@ with st.container(border=True):
                 "Per-item claim amount (S$) — applied to both items", value="75.00",
             )
 
+    show_live_view = st.checkbox(
+        "Show live screenshots while it runs",
+        value=True,
+        help="There's no real browser window to watch on a remote server, but "
+             "with this on you'll see a screenshot of the portal after each "
+             "wizard step completes -- a 'flipbook' view of the run in near "
+             "real time. Turning it off saves a little time per run.",
+    )
+
     run_clicked = st.button("Run test claim", type="primary", use_container_width=True)
 
 
@@ -255,7 +264,8 @@ class _StreamlitLogWriter:
 
 def _run_case(case_key: str, *, policy_suffix: str, fill_only: bool,
               medical_amount: str, baggage_item_amount: str,
-              status, log_placeholder) -> None:
+              show_live_view: bool,
+              status, log_placeholder, live_view_placeholder) -> None:
     run_fn = automation.CASES[case_key]
     run_kwargs = {"policy_suffix": policy_suffix, "auto_submit": not fill_only}
     if case_key == "medical":
@@ -277,8 +287,22 @@ def _run_case(case_key: str, *, policy_suffix: str, fill_only: bool,
             )
             page = browser.new_page()
             page.set_default_timeout(automation.DEFAULT_TIMEOUT_MS)
+
+            def _show_live_screenshot(label: str) -> None:
+                # Called from the same thread driving the automation, right
+                # after a step settles -- never mid-fill -- so it's always
+                # safe to touch the page here (Playwright's sync API isn't
+                # safe to call concurrently from another thread).
+                try:
+                    shot = page.screenshot(type="jpeg", quality=60)
+                except Exception:
+                    return
+                live_view_placeholder.image(shot, caption=label)
+
+            on_step = _show_live_screenshot if show_live_view else None
+
             try:
-                run_fn(page, pdf_dir, **run_kwargs)
+                run_fn(page, pdf_dir, on_step=on_step, **run_kwargs)
             except Exception:
                 screenshot_path = (
                     Path(tempfile.gettempdir())
@@ -294,7 +318,6 @@ def _run_case(case_key: str, *, policy_suffix: str, fill_only: bool,
     finally:
         sys.stdout = old_stdout
 
-    st.session_state["last_screenshot"] = None
     return None
 
 
@@ -307,6 +330,7 @@ if run_clicked:
     else:
         try:
             with st.status("Running...", expanded=True) as status:
+                live_view_placeholder = st.empty()
                 log_placeholder = st.empty()
                 try:
                     _run_case(
@@ -315,8 +339,10 @@ if run_clicked:
                         fill_only=fill_only,
                         medical_amount=medical_amount,
                         baggage_item_amount=baggage_item_amount,
+                        show_live_view=show_live_view,
                         status=status,
                         log_placeholder=log_placeholder,
+                        live_view_placeholder=live_view_placeholder,
                     )
                 except Exception as exc:
                     status.update(label="Failed", state="error", expanded=True)

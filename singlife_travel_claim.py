@@ -35,7 +35,7 @@ import tempfile
 import time
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional
+from typing import Callable, Optional
 
 from playwright.sync_api import Page, TimeoutError as PWTimeoutError, sync_playwright
 
@@ -668,12 +668,23 @@ def _amount_label(amount: str) -> str:
 
 
 def run_medical_case(page: Page, pdf_dir: Path, *, policy_suffix: str, auto_submit: bool,
-                      claim_amount: str = "250.00") -> None:
+                      claim_amount: str = "250.00",
+                      on_step: Optional[Callable[[str], None]] = None) -> None:
+    """`on_step`, if given, is called with a short human-readable label after
+    each wizard step completes -- e.g. so a GUI can grab a screenshot and
+    show progress without a real (headed) browser window to look at. Purely
+    observational: never called before a step, only after, so it always
+    reflects a stable, fully-settled page rather than a mid-fill moment."""
+    def step(label: str) -> None:
+        if on_step:
+            on_step(label)
+
     surname, given_name = _random_name()
     policy = f"{_random_policy_prefix()}MEDICAL{_amount_label(claim_amount)}{policy_suffix}"
     print(f"Using policy number: {policy}  |  Insured: {given_name} {surname}  |  "
           f"Claim amount: S${claim_amount}")
     goto_and_start_claim(page)
+    step("Started claim")
     fill_basic_details(
         page,
         policy_no=policy,
@@ -683,6 +694,7 @@ def run_medical_case(page: Page, pdf_dir: Path, *, policy_suffix: str, auto_subm
         contact_name=f"{given_name} {surname}",
         mobile_number="91234567",
     )
+    step("Basic Details")
     fill_insured_and_claimant(
         page,
         surname=surname, given_name=given_name, id_number="S1234567A",
@@ -691,6 +703,7 @@ def run_medical_case(page: Page, pdf_dir: Path, *, policy_suffix: str, auto_subm
         block_street_no="123", street_name="Test Street",
         postal_code="123456", country="Singapore",
     )
+    step("Insured & Claimant")
     fill_claim_details_common(
         page, place="Singapore Changi Airport", country="Singapore",
         description="Fell ill with flu during travel and required medical consultation.",
@@ -699,6 +712,7 @@ def run_medical_case(page: Page, pdf_dir: Path, *, policy_suffix: str, auto_subm
         page, consultation_date=("01", "01", "2026"), claim_amount=claim_amount, injury_illness="Flu",
     )
     go_next_from_claim_details(page)
+    step("Claim Details")
 
     pdfs = [
         make_dummy_pdf(pdf_dir, "flight_itinerary"),
@@ -707,14 +721,22 @@ def run_medical_case(page: Page, pdf_dir: Path, *, policy_suffix: str, auto_subm
         make_dummy_pdf(pdf_dir, "medical_bills"),
     ]
     upload_supporting_documents(page, pdfs)
+    step("Supporting Documents")
     complete_declaration_and_submit(page, auto_submit=auto_submit)
+    step("Declaration / Submitted")
 
 
-def run_flight_delay_case(page: Page, pdf_dir: Path, *, policy_suffix: str, auto_submit: bool) -> None:
+def run_flight_delay_case(page: Page, pdf_dir: Path, *, policy_suffix: str, auto_submit: bool,
+                           on_step: Optional[Callable[[str], None]] = None) -> None:
+    def step(label: str) -> None:
+        if on_step:
+            on_step(label)
+
     surname, given_name = _random_name()
     policy = f"{_random_policy_prefix()}AV222DELAY{policy_suffix}"
     print(f"Using policy number: {policy}  |  Insured: {given_name} {surname}")
     goto_and_start_claim(page)
+    step("Started claim")
     fill_basic_details(
         page,
         policy_no=policy,
@@ -724,6 +746,7 @@ def run_flight_delay_case(page: Page, pdf_dir: Path, *, policy_suffix: str, auto
         contact_name=f"{given_name} {surname}",
         mobile_number="91234567",
     )
+    step("Basic Details")
     fill_insured_and_claimant(
         page,
         surname=surname, given_name=given_name, id_number="S1234567A",
@@ -732,6 +755,7 @@ def run_flight_delay_case(page: Page, pdf_dir: Path, *, policy_suffix: str, auto
         block_street_no="123", street_name="Test Street",
         postal_code="123456", country="Singapore",
     )
+    step("Insured & Claimant")
     fill_claim_details_common(
         page, place="El Dorado International Airport", country="Colombia",
         description="Flight AV222 was delayed, causing significant travel inconvenience.",
@@ -744,6 +768,7 @@ def run_flight_delay_case(page: Page, pdf_dir: Path, *, policy_suffix: str, auto
         cause="Technical/mechanical delay reported by airline.",
     )
     go_next_from_claim_details(page)
+    step("Claim Details")
 
     pdfs = [
         make_dummy_pdf(pdf_dir, "flight_itinerary"),
@@ -751,17 +776,25 @@ def run_flight_delay_case(page: Page, pdf_dir: Path, *, policy_suffix: str, auto
         make_dummy_pdf(pdf_dir, "airline_delay_confirmation"),
     ]
     upload_supporting_documents(page, pdfs)
+    step("Supporting Documents")
     complete_declaration_and_submit(page, auto_submit=auto_submit)
+    step("Declaration / Submitted")
 
 
 def run_baggage_case(page: Page, pdf_dir: Path, *, policy_suffix: str, auto_submit: bool,
-                      item_amount: str = "75.00") -> None:
+                      item_amount: str = "75.00",
+                      on_step: Optional[Callable[[str], None]] = None) -> None:
+    def step(label: str) -> None:
+        if on_step:
+            on_step(label)
+
     surname, given_name = _random_name()
     total_label = _amount_label(str(float(item_amount) * 2))
     policy = f"{_random_policy_prefix()}BAGGAGE{total_label}{policy_suffix}"
     print(f"Using policy number: {policy}  |  Insured: {given_name} {surname}  |  "
           f"Item claim amount: S${item_amount} each")
     goto_and_start_claim(page)
+    step("Started claim")
     fill_basic_details(
         page,
         policy_no=policy,
@@ -771,6 +804,7 @@ def run_baggage_case(page: Page, pdf_dir: Path, *, policy_suffix: str, auto_subm
         contact_name=f"{given_name} {surname}",
         mobile_number="91234567",
     )
+    step("Basic Details")
     fill_insured_and_claimant(
         page,
         surname=surname, given_name=given_name, id_number="S1234567A",
@@ -779,6 +813,7 @@ def run_baggage_case(page: Page, pdf_dir: Path, *, policy_suffix: str, auto_subm
         block_street_no="123", street_name="Test Street",
         postal_code="123456", country="Singapore",
     )
+    step("Insured & Claimant")
     fill_claim_details_common(
         page, place="Singapore Changi Airport", country="Singapore",
         description="Checked-in baggage was damaged and items inside were lost or damaged during travel.",
@@ -795,6 +830,7 @@ def run_baggage_case(page: Page, pdf_dir: Path, *, policy_suffix: str, auto_subm
     ]
     fill_property_damage(page, items, claim_type_labels=["Loss or Damage of Baggage"])
     go_next_from_claim_details(page)
+    step("Claim Details")
 
     pdfs = [
         make_dummy_pdf(pdf_dir, "flight_itinerary"),
@@ -804,7 +840,9 @@ def run_baggage_case(page: Page, pdf_dir: Path, *, policy_suffix: str, auto_subm
         make_dummy_pdf(pdf_dir, "photos_of_damage"),
     ]
     upload_supporting_documents(page, pdfs)
+    step("Supporting Documents")
     complete_declaration_and_submit(page, auto_submit=auto_submit)
+    step("Declaration / Submitted")
 
 
 CASES = {
