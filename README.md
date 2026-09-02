@@ -36,15 +36,29 @@ there with your GitHub account — no separate signup).
    - `singlife_travel_claim.py`
    - `requirements.txt`
    - `packages.txt`
-   - `.streamlit/config.toml` (keep the `.streamlit` folder — GitHub's
-     "Add file → Upload files" page preserves folder structure if you drag
-     the whole folder in; otherwise create the file manually at that path)
-   - `assets/fermion_mark.png` (the logo/favicon — keep the `assets`
-     folder, same note as above)
+   - `.streamlit/config.toml`
+   - `assets/fermion_mark.png` (the logo/favicon)
 
-   Easiest way if you're not familiar with git: on your new repo's GitHub
-   page, click **Add file → Upload files**, then drag in this whole
-   `streamlit_app` folder's contents.
+   ⚠️ **The `.streamlit` folder is easy to lose** — because its name
+   starts with a dot, most "choose files" dialogs (Finder, Windows
+   Explorer) hide it by default, so if you pick files one-by-one you may
+   never see it to select it. The app is now built to still look right
+   without it (it no longer depends on that file for the dark background),
+   but you'd lose the exact button/widget accent colors, so it's worth
+   getting it in. Two reliable ways to do it:
+   - **Drag-and-drop the whole folder** (not individual files) from your
+     file browser directly onto GitHub's "Add file → Upload files" page —
+     dragging a folder (rather than opening a picker dialog) does include
+     hidden files.
+   - Or, once the rest is uploaded, use GitHub's web editor: go to your
+     repo, click **Add file → Create new file**, and type
+     `.streamlit/config.toml` as the filename (typing the `/` creates the
+     folder automatically) — then paste this repo's `.streamlit/config.toml`
+     contents in and commit.
+
+   Same applies to the `assets` folder, though it's not hidden — just
+   make sure `assets/fermion_mark.png` actually made it in (check your
+   repo's file list after uploading).
 3. Go to **[share.streamlit.io](https://share.streamlit.io)**, sign in,
    click **New app**, pick the repository you just created, and set:
    - **Main file path:** `app.py`
@@ -74,6 +88,12 @@ That's it — no server to manage, no ongoing cost on the free tier.
 
 ## Things worth knowing
 
+- **If the background ever looks wrong** (plain white instead of dark
+  navy), it almost certainly means `.streamlit/config.toml` didn't make
+  it into the deployed repo — check your GitHub repo's file list for it.
+  The core dark theme is now baked into `app.py` itself and doesn't
+  depend on that file, but a couple of native widget accents (like the
+  radio button's selected-color dot) do still come from it.
 - **One run at a time.** If someone else is mid-run when you click Run,
   you'll get a "please wait" message instead of two browsers launching at
   once — the free hosting tier only has ~1 GB of memory, which is enough

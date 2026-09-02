@@ -44,8 +44,51 @@ st.markdown(
     """
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+    /* -----------------------------------------------------------------
+       Force the dark navy theme directly on Streamlit's own containers.
+       This is deliberately NOT left to .streamlit/config.toml alone --
+       that file lives in a dotfolder that's easy to lose when uploading
+       through a file picker (hidden by default in Finder/Explorer), and
+       when it's missing Streamlit silently falls back to its default
+       light theme with no error, which is exactly the "background looks
+       wrong" symptom this is guarding against. config.toml is still
+       included and still matters (it themes native widget chrome like
+       button focus rings that CSS alone can't reach), but the page no
+       longer *depends* on it for the core look.
+       ----------------------------------------------------------------- */
     html, body, [class*="css"] { font-family: 'Inter', system-ui, sans-serif; }
+
+    [data-testid="stApp"], [data-testid="stAppViewContainer"],
+    [data-testid="stMain"], [data-testid="stHeader"] {
+        background-color: #0A2733 !important;
+    }
+    [data-testid="stHeader"] { background-image: none !important; }
+    /* color (not fill) recolors the menu icon via its own fill="currentColor" --
+       forcing `fill` directly here would also override the icon's separate
+       invisible fill="none" hit-box path and paint it as a solid square. */
+    [data-testid="stHeader"] * { color: #EAF6FA !important; }
+
     .block-container { padding-top: 2rem; padding-bottom: 3rem; max-width: 760px; }
+
+    /* Default widget text (labels, radio/checkbox option text, captions,
+       plain markdown) -- otherwise renders as dark text on the new dark
+       background and becomes unreadable. */
+    [data-testid="stWidgetLabel"] p, [data-testid="stMarkdownContainer"] p,
+    [data-testid="stRadioOption"] label p, [data-testid="stCheckbox"] label p,
+    [data-testid="stCaptionContainer"] { color: #EAF6FA !important; }
+
+    input[type="radio"], input[type="checkbox"] { accent-color: #C3D700; }
+
+    [data-testid="stTextInputRootElement"] {
+        background-color: #0F3543 !important; border-color: #1E4E60 !important;
+    }
+    [data-testid="stTextInputRootElement"] input { color: #EAF6FA !important; }
+
+    [data-testid="stExpander"] {
+        background-color: #0F3543 !important; border: 1px solid #1E4E60 !important;
+        border-radius: 10px;
+    }
 
     .brand-header {
         display: flex; align-items: center; gap: 14px;
@@ -73,8 +116,10 @@ st.markdown(
         background-color: #d4e820; border-color: #d4e820; color: #0A2733;
     }
 
-    div[data-testid="stVerticalBlockBorderWrapper"] { border-radius: 12px; }
-    div[data-testid="stExpander"] { border-radius: 10px; }
+    div[data-testid="stVerticalBlockBorderWrapper"] {
+        background-color: #0F3543 !important; border: 1px solid #1E4E60 !important;
+        border-radius: 12px;
+    }
     code { color: #BFE6EF; }
     </style>
     """,
