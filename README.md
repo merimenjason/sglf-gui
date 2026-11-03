@@ -113,10 +113,9 @@ That's it — no server to manage, no ongoing cost on the free tier.
   Vercel — that mismatch (Vercel's functions typically time out at
   10–60 seconds, well under what a full multi-step form fill needs) is
   exactly why this is built on Streamlit instead.
-- **Policy numbers and insured names are randomised on every run** (see
-  the main `README.md` for the CLI script) so repeat test runs are easy
-  to tell apart in the UAT system — both are shown in the log and in the
-  final result.
+- **Policy numbers, insured names, and passport numbers are randomised on
+  every run** so repeat test runs are easy to tell apart in the UAT system.
+  Policy numbers and insured names are shown in the live log.
 - If Merimen changes the portal's DOM/fields, this will need the same
   kind of selector updates as the CLI script — it's the same underlying
   automation code (`singlife_travel_claim.py`), just triggered from a web
